@@ -1,0 +1,424 @@
+<!-- Copyright 2026 UNLOOP MORGAN -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Morganized</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Material+Symbols+Outlined&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background orbs -->
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="drag-strip" data-tauri-drag-region></div>
+
+  <!-- Dual Pane Container -->
+  <div class="app-container" id="appContainer">
+
+    <!-- ========== LEFT FRAME ========== -->
+    <div class="left-frame expanded" id="leftFrame" data-acrylic>
+      <!-- Titlebar -->
+      <div class="titlebar" id="titlebar" data-tauri-drag-region>
+        <div class="titlebar-center">
+          <img src="assets/TopbarName.svg" alt="Morganized" class="titlebar-logo" id="titlebarLogo" style="height:18px;">
+          <button class="titlebar-settings" id="titlebarSettingsBtn" title="Settings">
+            <span class="material-symbols-outlined">settings</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pane-left-inner">
+
+        <!-- Shared header (back btn + title) -->
+        <div class="pane-header" id="paneHeader" style="display:none;" data-tauri-drag-region>
+          <button class="back-btn" id="backBtn" title="Back">
+            <span class="material-symbols-outlined">arrow_back_ios_new</span>
+          </button>
+          <h2 class="task-view-title" id="taskViewTitle">New Task</h2>
+        </div>
+
+        <!-- Home View -->
+        <div class="pane-view active" id="homeView">
+          <div class="pane-body">
+            <div class="home-hero">
+              <h1 class="home-title" id="welcomeTitle" data-i18n>Welcome, User!</h1>
+              <p class="home-subtitle" data-i18n>What do you want to organize today?</p>
+            </div>
+            <div class="home-actions">
+              <button class="btn btn-accent btn-large" id="createTaskBtn" data-acrylic>
+                <span class="material-symbols-outlined">add</span>
+                <span data-i18n>Create New Task</span>
+              </button>
+            </div>
+            <div class="saved-tasks-section">
+              <h3 class="saved-tasks-title" data-i18n>Saved Tasks</h3>
+              <div class="saved-tasks-grid" id="savedTasksGrid">
+                <p class="empty-state">No saved tasks yet. Create one to get started.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Tasks View (active task workspace) -->
+        <div class="pane-view" id="tasksView">
+          <div class="pane-body">
+            <div class="card" data-acrylic>
+              <button class="btn btn-primary" id="sourceBtn">
+                <span class="material-symbols-outlined">folder_open</span>
+                <span data-i18n>Pick Source Folder</span>
+              </button>
+              <p class="path-display" id="sourcePath">No folder selected</p>
+            </div>
+            <div class="card" data-acrylic>
+              <button class="btn btn-primary" id="destBtn">
+                <span class="material-symbols-outlined">create_new_folder</span>
+                <span data-i18n>Pick Destination Folder</span>
+              </button>
+              <p class="path-display" id="destPath">No folder selected</p>
+            </div>
+            <div class="card">
+              <div class="btn-row-actions">
+                <button class="btn btn-accent" id="organizeBtn" data-acrylic>
+                  <span class="material-symbols-outlined">rocket_launch</span>
+                  <span data-i18n>Organize Files</span>
+                </button>
+                <button class="btn btn-secondary" id="saveTaskBtn" data-acrylic title="Save Task">
+                  <span class="material-symbols-outlined">save</span>
+                </button>
+                <button class="btn btn-secondary" id="editNameBtn" data-acrylic title="Rename Task">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+              </div>
+            </div>
+            <div class="status-card">
+              <p class="status-text" id="statusText" data-i18n>Ready.</p>
+              <progress class="progress-bar" id="progressBar" value="0" max="100"></progress>
+              <p class="debug-text" id="debugText"></p>
+              <div class="overlap-warning" id="overlapWarning"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview View -->
+        <div class="pane-view" id="previewView">
+          <div class="pane-body">
+            <div class="sort-bar">
+              <label for="preview-sort" data-i18n>Sort:</label>
+              <select id="preview-sort">
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="time-desc">Time (Newest first)</option>
+                <option value="time-asc">Time (Oldest first)</option>
+              </select>
+            </div>
+            <div class="tree-container" id="previewList"></div>
+          </div>
+        </div>
+
+        <!-- Settings View -->
+        <div class="pane-view" id="settingsView">
+          <div class="pane-body">
+            <div class="settings-close-row" id="settingsCloseRow" style="display:none;">
+              <button class="btn btn-secondary" id="settingsCloseBtn">
+                <span class="material-symbols-outlined">arrow_back_ios_new</span>
+                <span data-i18n>Back</span>
+              </button>
+            </div>
+            <div class="settings-group">
+              <p class="settings-label" data-i18n>Appearance</p>
+              <label class="check-label">
+                <input type="checkbox" id="lightModeToggle">
+                <span class="check-mark material-symbols-outlined">done</span>
+                <span class="check-text" data-i18n>Light mode</span>
+              </label>
+              <label class="check-label" style="margin-top:8px;">
+                <input type="checkbox" id="use24HourTime">
+                <span class="check-mark material-symbols-outlined">done</span>
+                <span class="check-text" data-i18n>Use 24-hour time (00:00 – 23:59)</span>
+              </label>
+              <label class="check-label" style="margin-top:8px;">
+                <input type="checkbox" id="solidBgToggle">
+                <span class="check-mark material-symbols-outlined">done</span>
+                <span class="check-text" data-i18n>Solid background</span>
+              </label>
+              <label class="check-label" style="margin-top:8px;">
+                <input type="checkbox" id="saveDefaultCatsEnglish">
+                <span class="check-mark material-symbols-outlined">done</span>
+                <span class="check-text" data-i18n>Save default categories with English names</span>
+              </label>
+              <p class="setting-row-label" style="margin-top:12px;margin-bottom:6px;" data-i18n>Theme color</p>
+              <div class="color-presets" id="colorPresets">
+                <button class="color-swatch active" data-color="#FF8A8A" style="background:#FF8A8A" title="Light Red"></button>
+                <button class="color-swatch" data-color="#8AB4FF" style="background:#8AB4FF" title="Blue"></button>
+                <button class="color-swatch" data-color="#8FFFA8" style="background:#8FFFA8" title="Green"></button>
+                <button class="color-swatch" data-color="#D08AFF" style="background:#D08AFF" title="Purple"></button>
+                <button class="color-swatch" data-color="#FFC98A" style="background:#FFC98A" title="Orange"></button>
+                <button class="color-swatch" data-color="#FF8AD8" style="background:#FF8AD8" title="Pink"></button>
+              </div>
+            </div>
+            <div class="settings-group">
+              <p class="settings-label" data-i18n>Profile</p>
+              <input type="text" id="usernameInput" class="input-field" data-i18n-placeholder="profile" placeholder="Enter your name" style="max-width:220px;">
+            </div>
+            <div class="settings-group">
+              <p class="settings-label" data-i18n>Language</p>
+              <select id="languageSelect" class="input-field">
+                <option value="en" data-i18n>English</option>
+                <option value="zh">中文（简体）</option>
+                <option value="zh-TW">中文（繁體）</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+              </select>
+            </div>
+            <div class="settings-group">
+              <p class="settings-label" data-i18n>About MORGANIZED</p>
+              <img src="assets/DevelopedByMORGAN.png" alt="Developed by MORGAN" class="about-brand" draggable="false">
+              <p class="about-version" id="aboutVersion"></p>
+              <p class="about-dev" data-i18n>Developer: © UNLOOP MORGAN</p>
+              <p class="about-version" id="aboutCore">Organize Core: Build 001</p>
+              <p class="about-version" id="aboutUI">UI Specification: Acrylic UI 2 (Sayram)</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Floating Dock (only in active task state) -->
+      <nav class="floating-dock" id="mainDock" data-acrylic style="display:none;">
+        <button class="dock-btn active" data-view="tasksView" title="Tasks">
+          <span class="material-symbols-outlined">assignment</span>
+        </button>
+        <button class="dock-btn" data-view="previewView" title="Preview">
+          <span class="material-symbols-outlined">visibility</span>
+        </button>
+        <button class="dock-btn" data-view="settingsView" title="Settings">
+          <span class="material-symbols-outlined">settings</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- ========== RESIZE GUTTER ========== -->
+    <div class="resize-gutter" id="resizeGutter" style="display:none;"></div>
+
+    <!-- ========== RIGHT PANE (Rules Engine) ========== -->
+    <div class="pane-right" id="rightPane" style="display:none;">
+      <div class="rules-header" data-tauri-drag-region>
+        <h2 class="rules-panel-title"><span class="material-symbols-outlined rules-panel-icon">alt_route</span><span data-i18n>Organize Rules</span></h2>
+        <p class="rules-panel-subtitle" data-i18n>Define your file organization logic</p>
+      </div>
+      <div class="pane-body rules-body">
+        <form id="organize-rules-form">
+          <!-- Core Organize Dimensions -->
+          <div class="rules-section">
+            <h3 class="rules-section-title" data-i18n>Core Dimensions</h3>
+
+            <label class="check-label">
+              <input type="checkbox" id="toggle-file-types">
+              <span class="check-mark material-symbols-outlined">done</span>
+              <span class="check-text" data-i18n>Organize by File Types</span>
+            </label>
+
+            <div id="file-types-section" class="nested-options hidden">
+              <div class="file-type-options" id="preset-file-types">
+                <button type="button" class="btn btn-small btn-add-cat" id="add-custom-category-btn" data-i18n>+ Add Category</button>
+                <div class="add-category-form" id="addCategoryForm" style="display:none; margin-top: 8px; padding: 10px; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                  <div style="display:flex;gap:6px;align-items:center;">
+                    <input type="text" id="custom-category-name" class="input-field" placeholder="Category name" style="flex:1;">
+                    <button type="button" class="btn btn-accent" id="addCategoryConfirm" data-i18n>Add</button>
+                    <button type="button" class="btn btn-secondary" id="addCategoryCancel" data-i18n>Cancel</button>
+                  </div>
+                </div>
+
+                <div class="preset-category" data-category="documents">
+                  <label class="check-label">
+                    <input type="checkbox" name="file-type" value="documents">
+                    <span class="check-mark material-symbols-outlined">done</span>
+                    <span class="check-text" data-i18n>Documents (PDF, DOCX, TXT)</span>
+                  </label>
+                  <button type="button" class="icon-btn rename-preset-category" title="Rename">
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+                  <button type="button" class="icon-btn remove-preset-category" title="Remove">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+                <div class="custom-options-container custom-options-container-documents" style="display:none;">
+                  <div class="custom-option-input">
+                    <input type="text" class="custom-option-field" data-filetype="documents" placeholder="Add extension (e.g. .md)">
+                    <button type="button" class="btn btn-tiny add-custom-option" data-filetype="documents">Add</button>
+                  </div>
+                  <div class="custom-options-list" id="custom-options-list-documents"></div>
+                </div>
+
+                <div class="preset-category" data-category="media">
+                  <label class="check-label">
+                    <input type="checkbox" name="file-type" value="media">
+                    <span class="check-mark material-symbols-outlined">done</span>
+                    <span class="check-text" data-i18n>Media (Images, Videos, Audio)</span>
+                  </label>
+                  <button type="button" class="icon-btn rename-preset-category" title="Rename">
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+                  <button type="button" class="icon-btn remove-preset-category" title="Remove">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+                <div class="custom-options-container custom-options-container-media" style="display:none;">
+                  <div class="custom-option-input">
+                    <input type="text" class="custom-option-field" data-filetype="media" placeholder="Add extension (e.g. .svg)">
+                    <button type="button" class="btn btn-tiny add-custom-option" data-filetype="media">Add</button>
+                  </div>
+                  <div class="custom-options-list" id="custom-options-list-media"></div>
+                </div>
+
+                <div class="preset-category" data-category="archives">
+                  <label class="check-label">
+                    <input type="checkbox" name="file-type" value="archives">
+                    <span class="check-mark material-symbols-outlined">done</span>
+                    <span class="check-text" data-i18n>Archives (ZIP, RAR)</span>
+                  </label>
+                  <button type="button" class="icon-btn rename-preset-category" title="Rename">
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+                  <button type="button" class="icon-btn remove-preset-category" title="Remove">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+                <div class="custom-options-container custom-options-container-archives" style="display:none;">
+                  <div class="custom-option-input">
+                    <input type="text" class="custom-option-field" data-filetype="archives" placeholder="Add extension (e.g. .7z)">
+                    <button type="button" class="btn btn-tiny add-custom-option" data-filetype="archives">Add</button>
+                  </div>
+                  <div class="custom-options-list" id="custom-options-list-archives"></div>
+                </div>
+              </div>
+            </div>
+
+            <label class="check-label">
+              <input type="checkbox" id="toggle-time-org">
+              <span class="check-mark material-symbols-outlined">done</span>
+              <span class="check-text" data-i18n>Organize by Time</span>
+            </label>
+
+            <div id="time-org-section" class="nested-options hidden">
+              <div class="time-option-row">
+                <label class="check-label">
+                  <input type="checkbox" name="time-option" value="year">
+                  <span class="check-mark material-symbols-outlined">done</span>
+                  <span class="check-text" data-i18n>Year</span>
+                </label>
+                <input type="text" class="time-option-name" id="time-year-name" placeholder="Custom: TeamName {Year}" style="display:none;">
+              </div>
+              <div class="time-option-row">
+                <label class="check-label">
+                  <input type="checkbox" name="time-option" value="month">
+                  <span class="check-mark material-symbols-outlined">done</span>
+                  <span class="check-text" data-i18n>Month</span>
+                </label>
+                <input type="text" class="time-option-name" id="time-month-name" placeholder="Custom: {Year}-{Month}" style="display:none;">
+              </div>
+              <div class="time-option-row">
+                <label class="check-label">
+                  <input type="checkbox" name="time-option" value="week">
+                  <span class="check-mark material-symbols-outlined">done</span>
+                  <span class="check-text" data-i18n>Week</span>
+                </label>
+                <input type="text" class="time-option-name" id="time-week-name" placeholder="Custom: {Year}-{Month}-{Week}" style="display:none;">
+              </div>
+              <div class="time-option-row">
+                <label class="check-label">
+                  <input type="checkbox" name="time-option" value="day">
+                  <span class="check-mark material-symbols-outlined">done</span>
+                  <span class="check-text" data-i18n>Day</span>
+                </label>
+                <input type="text" class="time-option-name" id="time-day-name" placeholder="Custom: {Year}-{Month}-{Week}-{Day}" style="display:none;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Time Range -->
+          <div class="rules-section">
+            <h3 class="rules-section-title" data-i18n>Time Range</h3>
+            <div class="date-range">
+              <div class="date-field"><label data-i18n>Start Date</label><div class="custom-date-input"><input type="date" id="start-date" class="date-native"><span class="material-symbols-outlined date-icon">calendar_today</span></div></div>
+              <div class="date-field"><label data-i18n>End Date</label><div class="custom-date-input"><input type="date" id="end-date" class="date-native"><span class="material-symbols-outlined date-icon">calendar_today</span></div></div>
+              <button type="button" class="icon-btn" id="resetDates" title="Reset dates" style="align-self:flex-end;margin-bottom:2px;"><span class="material-symbols-outlined">restart_alt</span></button>
+            </div>
+            <div class="date-range" style="margin-top:8px;">
+              <div class="date-field"><label data-i18n>Start Time</label><input type="text" id="start-time" class="time-custom-input" data-i18n-placeholder="hhmm" placeholder="HH:MM" maxlength="8"></div>
+              <div class="date-field"><label data-i18n>End Time</label><input type="text" id="end-time" class="time-custom-input" placeholder="HH:MM" maxlength="8"></div>
+              <button type="button" class="icon-btn" id="resetTimes" title="Reset times" style="align-self:flex-end;margin-bottom:2px;"><span class="material-symbols-outlined">restart_alt</span></button>
+            </div>
+          </div>
+
+          <!-- Day Exclusion -->
+          <div class="rules-section">
+            <h3 class="rules-section-title" data-i18n>Day Exclusion</h3>
+            <div class="exclusion-grid">
+              <label class="check-label"><input type="checkbox" name="excluded-days" value="sunday"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Sunday</span></label>
+              <label class="check-label"><input type="checkbox" name="excluded-days" value="monday"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Monday</span></label>
+              <label class="check-label"><input type="checkbox" name="excluded-days" value="tuesday"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Tuesday</span></label>
+              <label class="check-label"><input type="checkbox" name="excluded-days" value="wednesday"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Wednesday</span></label>
+              <label class="check-label"><input type="checkbox" name="excluded-days" value="thursday"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Thursday</span></label>
+              <label class="check-label"><input type="checkbox" name="excluded-days" value="friday"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Friday</span></label>
+              <label class="check-label"><input type="checkbox" name="excluded-days" value="saturday"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Saturday</span></label>
+            </div>
+            <div class="date-field">
+              <label for="excluded-specific-dates" data-i18n>EXCLUDE SPECIFIC DATES</label>
+              <div class="custom-option-input">
+                <div class="custom-date-input" style="flex:1"><input type="date" id="excluded-specific-dates" class="custom-option-field date-native"><span class="material-symbols-outlined date-icon">calendar_today</span></div>
+                <button type="button" class="btn btn-tiny" id="addExcludedDate">Add</button>
+              </div>
+            </div>
+            <div id="exclude-dates-list" class="tag-list"></div>
+          </div>
+
+          <!-- File Operations -->
+          <div class="rules-section">
+            <h3 class="rules-section-title" data-i18n>File Operations</h3>
+            <label class="check-label"><input type="checkbox" id="deleteOriginals"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Move files (instead of copy)</span></label>
+            <label class="check-label"><input type="checkbox" id="skipHidden"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Skip hidden files</span></label>
+            <label class="check-label"><input type="checkbox" id="skipDSStore"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Skip .DS_Store files</span></label>
+            <label class="check-label"><input type="checkbox" id="useNumericMonths"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Use numbers for months (01 instead of January)</span></label>
+            <label class="check-label"><input type="checkbox" id="createOtherFolder"><span class="check-mark material-symbols-outlined">done</span><span class="check-text" data-i18n>Create folder for file types not included in categories</span></label>
+          </div>
+
+          <!-- File Filter -->
+          <div class="rules-section">
+            <h3 class="rules-section-title" data-i18n>File Type Filter</h3>
+            <div class="custom-option-input">
+              <input type="text" id="fileFilterInput" class="custom-option-field" data-i18n-placeholder="addExtPlaceholder" placeholder="Add extension (e.g. .jpg)">
+              <button type="button" class="btn btn-tiny" id="addFileFilterTag">Add</button>
+            </div>
+            <div class="custom-options-list file-filter-tags" id="fileFilterTags"></div>
+          </div>
+
+          <!-- Actions -->
+          <div class="rules-actions">
+            <button type="submit" class="btn btn-accent" id="apply-rules-btn" data-acrylic data-i18n>Update Preview</button>
+            <button type="button" class="btn btn-secondary" id="reset-rules-btn" data-i18n>Reset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="modules/i18n.js"></script>
+  <script src="modules/ipc.js"></script>
+  <script src="modules/preview.js"></script>
+  <script src="modules/rules.js"></script>
+  <script src="modules/categories.js"></script>
+  <script src="modules/state.js"></script>
+  <script src="modules/settings.js"></script>
+  <script src="modules/window.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>

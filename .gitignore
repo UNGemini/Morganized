@@ -1,0 +1,25 @@
+# Rust build
+src-tauri/target/
+
+# Generated schemas
+src-tauri/gen/schemas
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Node (if npm deps added later)
+node_modules/
+
+# Build artifacts
+dist/
+*.dmg
+*.app
+*.pkg
+
+# Env
+.env
+.env.local

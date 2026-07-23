@@ -1,0 +1,11 @@
+{
+  "name": "morganized-tauri",
+  "version": "1.0.0",
+  "description": "Morganized - Smart File Organization",
+  "scripts": {
+    "tauri": "cargo tauri"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
