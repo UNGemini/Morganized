@@ -119,7 +119,7 @@ Morganized-Tauri/
 
 ---
 
-## App Icon
+## App Iconhttps://github.com/UNGemini/Morganized/edit/main/README.md
 
 Generated from `src/assets/Icon Exports/` using:
 
@@ -133,7 +133,7 @@ magick 128.png 32.png 256.png 512.png -colors 256 icon.ico
 
 ## License
 
-ISC
+[Apache License 2.0](https://github.com/UNGemini/Morganized/blob/main/LICENSE)
 
 ---
 
