@@ -26,7 +26,7 @@ Morganized is a desktop file organization app built with [Tauri](https://tauri.a
 | Backend | Rust |
 | Frontend | Vanilla JS, CSS, HTML |
 | Icons | Material Symbols (Google Fonts) |
-| Platform | macOS, Windows, Linux |
+| Platform | macOS, Windows |
 
 ---
 
