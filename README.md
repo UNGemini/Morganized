@@ -3,6 +3,10 @@
 
 Morganized is a desktop file organization app built with [Tauri](https://tauri.app/) and Rust. Organize messy folders by **time** (year → month → week → day) and **file type** (documents, media, archives, or custom categories) with a live preview before you commit.
 
+For user installation, [visit our website](https://www.morgandev.cc/morganized) for instructions.
+
+For development deployment, please refer to the instructions in the “Development” section below.
+
 ---
 
 ## Features
