@@ -125,7 +125,7 @@ Morganized-Tauri/
 
 ## License
 
-[Apache License 2.0](https://github.com/UNGemini/Morganized/blob/main/LICENSE)
+[MIT License](https://github.com/UNGemini/Morganized/blob/main/LICENSE)
 
 ---
 
