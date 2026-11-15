@@ -30,6 +30,11 @@ function setupDrag() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Windows platform detection — disable backdrop-filter
+  if (navigator.userAgent.indexOf('Windows') !== -1) {
+    document.documentElement.classList.add('is-windows');
+  }
+
   setupDrag();
 
   // Initialize all modules

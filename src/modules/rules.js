@@ -103,11 +103,17 @@ function collectFormData() {
   if (startDate && startDate.value) formData.startDate = startDate.value;
   if (endDate && endDate.value) formData.endDate = endDate.value;
 
-  // Time range
+  // Time range — always collect (clears if empty)
   var startTime = document.getElementById('start-time');
   var endTime = document.getElementById('end-time');
-  if (startTime && (startTime.getAttribute("data-time-raw") || startTime.value)) formData.startTime = startTime.getAttribute("data-time-raw") || startTime.value;
-  if (endTime && (endTime.getAttribute("data-time-raw") || endTime.value)) formData.endTime = endTime.getAttribute("data-time-raw") || endTime.value;
+  if (startTime) {
+    var raw = startTime.getAttribute("data-time-raw") || clampTimeValue(getRawTime(startTime.value));
+    formData.startTime = raw || undefined;
+  }
+  if (endTime) {
+    var raw = endTime.getAttribute("data-time-raw") || clampTimeValue(getRawTime(endTime.value));
+    formData.endTime = raw || undefined;
+  }
 
   // Excluded days
   formData.excludedDays = [];
@@ -151,6 +157,10 @@ function collectFormData() {
   // Create Other folder for unmatched files
   var createOtherFolder = document.getElementById('createOtherFolder');
   formData.createOtherFolder = createOtherFolder ? createOtherFolder.checked : false;
+
+  // Use Date Modified instead of Date Created
+  var useDateModified = document.getElementById('useDateModified');
+  formData.useDateModified = useDateModified ? useDateModified.checked : false;
 
   return formData;
 }
@@ -344,6 +354,8 @@ function restoreRulesUI() {
   if (el) el.checked = !!rules.useNumericMonths;
   el = document.getElementById('createOtherFolder');
   if (el) el.checked = rules.createOtherFolder !== false;
+  el = document.getElementById('useDateModified');
+  if (el) el.checked = !!rules.useDateModified;
 
   // Time custom names
   if (rules.yearCustomName) { var inp = document.getElementById('time-year-name'); if (inp) inp.value = rules.yearCustomName; }
