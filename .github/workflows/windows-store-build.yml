@@ -11,10 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --version 2.11.2 --locked
       - name: Build offline Windows installer
-        run: cargo tauri build --bundles nsis --config src-tauri/tauri.microsoftstore.conf.json
+        run: npx --yes @tauri-apps/cli@2.11.2 build --bundles nsis --config src-tauri/tauri.microsoftstore.conf.json
       - name: Capture app window if desktop is available
         continue-on-error: true
         shell: pwsh
