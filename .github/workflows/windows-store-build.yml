@@ -15,8 +15,29 @@ jobs:
         run: cargo install tauri-cli --version 2.11.2 --locked
       - name: Build offline Windows installer
         run: cargo tauri build --bundles nsis --config src-tauri/tauri.microsoftstore.conf.json
+      - name: Capture app window if desktop is available
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          $app = Start-Process -FilePath "src-tauri/target/release/Morganized.exe" -PassThru
+          Start-Sleep -Seconds 8
+          $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          $image = [System.Drawing.Bitmap]::new($bounds.Width, $bounds.Height)
+          $graphics = [System.Drawing.Graphics]::FromImage($image)
+          $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+          $image.Save("$pwd/morganized-windows-screenshot.png", [System.Drawing.Imaging.ImageFormat]::Png)
+          $graphics.Dispose()
+          $image.Dispose()
+          Stop-Process -Id $app.Id -ErrorAction SilentlyContinue
       - uses: actions/upload-artifact@v4
         with:
           name: morganized-windows-x64-unsigned
           path: src-tauri/target/release/bundle/nsis/*-setup.exe
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: morganized-windows-screenshot
+          path: morganized-windows-screenshot.png
+          if-no-files-found: ignore
