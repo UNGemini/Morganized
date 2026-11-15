@@ -1,0 +1,22 @@
+name: Windows Store build
+on:
+  push:
+    branches: [store/windows-v1.0.0]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version 2.11.2 --locked
+      - name: Build offline Windows installer
+        run: cargo tauri build --bundles nsis --config src-tauri/tauri.microsoftstore.conf.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: morganized-windows-x64-unsigned
+          path: src-tauri/target/release/bundle/nsis/*-setup.exe
+          if-no-files-found: error
