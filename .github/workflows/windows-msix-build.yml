@@ -1,27 +1,20 @@
-name: Windows MSIX and Microsoft Store
+name: Windows MSIX for manual Store submission
 on:
   push:
-    branches: [main, store/github-updates]
+    branches: [main]
   release:
     types: [published]
   workflow_dispatch:
-    inputs:
-      publish:
-        description: Submit this version to Microsoft Store
-        type: boolean
-        default: false
 permissions:
   contents: read
 concurrency:
-  group: morganized-store-${{ github.event_name == 'push' && github.ref || 'submission' }}
+  group: morganized-msix-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   build:
     if: github.event_name != 'release' || !github.event.release.prerelease
     runs-on: windows-latest
     timeout-minutes: 30
-    outputs:
-      version: ${{ steps.package-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,7 +27,6 @@ jobs:
         id: package-version
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
-          STORE_PUBLISH: ${{ github.event_name == 'release' || inputs.publish == true }}
         run: node scripts/prepare-msix.mjs
       - uses: dtolnay/rust-toolchain@stable
       - name: Build Windows executable
@@ -55,37 +47,3 @@ jobs:
           name: morganized-msix-${{ steps.package-version.outputs.version }}-x64
           path: Morganized_*.msix
           if-no-files-found: error
-  publish:
-    needs: build
-    if: github.event_name == 'release' || inputs.publish == true
-    runs-on: windows-latest
-    timeout-minutes: 20
-    steps:
-      - name: Check Store credentials
-        shell: pwsh
-        env:
-          AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-          SELLER_ID: ${{ secrets.SELLER_ID }}
-          AZURE_AD_APPLICATION_CLIENT_ID: ${{ secrets.AZURE_AD_APPLICATION_CLIENT_ID }}
-          AZURE_AD_APPLICATION_SECRET: ${{ secrets.AZURE_AD_APPLICATION_SECRET }}
-        run: |
-          foreach ($key in @('AZURE_AD_TENANT_ID', 'SELLER_ID', 'AZURE_AD_APPLICATION_CLIENT_ID', 'AZURE_AD_APPLICATION_SECRET')) {
-            if (-not [Environment]::GetEnvironmentVariable($key)) { throw "Missing GitHub Actions secret: $key. See docs/microsoft-store.md." }
-          }
-      - uses: actions/download-artifact@v4
-        with:
-          name: morganized-msix-${{ needs.build.outputs.version }}-x64
-          path: package
-      - uses: microsoft/microsoft-store-apppublisher@v1.1
-      - name: Authenticate and submit package
-        shell: pwsh
-        env:
-          AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-          SELLER_ID: ${{ secrets.SELLER_ID }}
-          AZURE_AD_APPLICATION_CLIENT_ID: ${{ secrets.AZURE_AD_APPLICATION_CLIENT_ID }}
-          AZURE_AD_APPLICATION_SECRET: ${{ secrets.AZURE_AD_APPLICATION_SECRET }}
-        run: |
-          msstore reconfigure --tenantId "$env:AZURE_AD_TENANT_ID" --sellerId "$env:SELLER_ID" --clientId "$env:AZURE_AD_APPLICATION_CLIENT_ID" --clientSecret "$env:AZURE_AD_APPLICATION_SECRET"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          msstore publish "package/Morganized_${{ needs.build.outputs.version }}.0_x64.msix" -id 9P90C0SFQ4BZ
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

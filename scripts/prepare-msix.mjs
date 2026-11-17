@@ -16,9 +16,6 @@ if (cargoVersion !== version) throw new Error('Cargo.toml and tauri.conf.json ve
 if (process.env.RELEASE_TAG && process.env.RELEASE_TAG !== `v${version}`) {
   throw new Error(`Release tag must be v${version}, matching the application version.`);
 }
-if (process.env.STORE_PUBLISH === 'true' && parts[0] === 1 && parts[1] === 0 && parts[2] === 0) {
-  throw new Error('Version 1.0.0 is already published. Increment the app version before submitting an update.');
-}
 const manifestPath = 'msix/AppxManifest.xml';
 const manifest = readFileSync(manifestPath, 'utf8');
 if (!/<Identity\b[^>]*\bVersion="[^"]+"/.test(manifest)) throw new Error('MSIX Identity version missing.');
