@@ -52,6 +52,7 @@ function showUnsavedModal(onLeave) {
 
   overlay.querySelector('.unsaved-btn-save').addEventListener('click', function() {
     // Force-collect latest rules before saving
+    if (typeof isRestoringUI !== 'undefined') isRestoringUI = false;
     if (typeof saveRulesAndPreview === 'function') saveRulesAndPreview(false);
     saveCurrentTask();
     overlay.remove();
@@ -406,7 +407,7 @@ function initState() {
   // Titlebar save button
   if (saveTaskBtn) {
     saveTaskBtn.addEventListener('click', function() {
-      if (typeof saveRulesAndPreview === 'function') saveRulesAndPreview(false);
+      if (typeof isRestoringUI !== 'undefined') isRestoringUI = false; if (typeof saveRulesAndPreview === 'function') saveRulesAndPreview(false);
       saveCurrentTask();
     });
   }

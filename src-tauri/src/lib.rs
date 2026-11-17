@@ -8,6 +8,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use tauri::{Emitter, Manager};
 
+#[cfg(target_os = "macos")]
 mod plugins;
 
 // ── Data types ──────────────────────────────────────────────────────────
@@ -70,6 +71,8 @@ pub struct OrganizeRules {
     pub use_numeric_months: bool,
     #[serde(rename = "createOtherFolder", default)]
     pub create_other_folder: bool,
+    #[serde(rename = "useDateModified", default)]
+    pub use_date_modified: bool,
     #[serde(rename = "startTime", default)]
     pub start_time: Option<String>,
     #[serde(rename = "endTime", default)]
@@ -216,9 +219,15 @@ async fn organize_files(
 
         // For preview, mark files that would be filtered out
         let is_skipped = options.dry_run && !filtered_set.contains(file.as_str());
-        // Read creation time for sorting (epoch millis, sorts correctly as string)
-        let created_str = fs::metadata(&src).ok()
-            .and_then(|m| m.created().ok())
+        // Read file time for sorting (epoch millis, sorts correctly as string)
+        let time_str = fs::metadata(&src).ok()
+            .and_then(|m| {
+                if options.organize_rules.as_ref().map_or(false, |r| r.use_date_modified) {
+                    m.modified().ok()
+                } else {
+                    m.created().ok()
+                }
+            })
             .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
             .map(|d| d.as_millis().to_string());
         plan.push(FilePlanEntry {
@@ -227,7 +236,7 @@ async fn organize_files(
             action: action.to_string(),
             skipped: is_skipped,
             reason: if is_skipped { Some("Filtered by rules".into()) } else { None },
-            created: created_str,
+            created: time_str,
         });
 
         processed += 1;
@@ -296,8 +305,8 @@ fn filter_by_time(
         .filter(|name| {
             let path = source_path.join(name);
             if let Ok(meta) = fs::metadata(&path) {
-                if let Ok(created) = meta.created() {
-                    let dt = created_to_naive(created);
+                let file_time = if rules.use_date_modified { meta.modified().ok() } else { meta.created().ok() }; if let Some(time) = file_time {
+                    let dt = created_to_naive(time);
 
                     // Check date range
                     if let Some((ref start_date, ref end_date)) = date_start {
@@ -478,8 +487,8 @@ fn filter_by_excluded_days(
         .filter(|name| {
             let path = source_path.join(name);
             if let Ok(meta) = fs::metadata(&path) {
-                if let Ok(created) = meta.created() {
-                    let dt = created_to_naive(created);
+                let file_time = if rules.use_date_modified { meta.modified().ok() } else { meta.created().ok() }; if let Some(time) = file_time {
+                    let dt = created_to_naive(time);
                     let date_str = dt.format("%Y-%m-%d").to_string();
                     if excluded_dates.contains(&date_str) {
                         return false;
@@ -512,13 +521,16 @@ fn build_organized_path(
     let time_enabled = rules.time_toggle && !rules.time_options.is_empty();
     let filetype_enabled = rules.file_type_toggle && !rules.file_types.is_empty();
 
-    // Read file creation time once
+    // Read file time once (created or modified based on rules)
     let dt_opt = if time_enabled {
         let meta = fs::metadata(src_path).map_err(|e| e.to_string())?;
-        let created = meta
-            .created()
-            .map_err(|e| format!("Cannot read creation time: {}", e))?;
-        Some(created_to_naive(created))
+        let time = if rules.use_date_modified {
+            meta.modified()
+        } else {
+            meta.created()
+        }
+        .map_err(|e| format!("Cannot read file time: {}", e))?;
+        Some(created_to_naive(time))
     } else {
         None
     };

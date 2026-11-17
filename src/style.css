@@ -1,4 +1,19 @@
 /* ================================================================
+
+/* Windows: no backdrop-filter in WebView2 */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+  --bg-root:     #0a0a0a;
+  --bg-frame:    rgba(10, 10, 10, 0.92);
+}
+  --bg-root:     #f5f5f5;
+  --bg-frame:    rgba(255, 255, 255, 0.92);
+}
+
+
+}
+
    Morganized — Dual-Pane File Organizer
    ================================================================
    Copyright 2026 UNLOOP MORGAN
@@ -65,6 +80,29 @@ html, body {
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
+
+/* Windows: no backdrop-filter in WebView2 */
+html.is-windows,
+html.is-windows body {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.is-windows {
+  --bg-root:     #0a0a0a;
+  --bg-frame:    rgba(10, 10, 10, 0.92);
+}
+[data-theme="light"] html.is-windows {
+  --bg-root:     #f5f5f5;
+  --bg-frame:    rgba(255, 255, 255, 0.92);
+}
+
+/* Hide solid-bg toggle on Windows (backdrop-filter n/a) */
+html.is-windows #solidBgToggle,
+html.is-windows #solidBgToggle + .check-mark,
+html.is-windows #solidBgToggle ~ .check-text {
+  display: none;
+}
+
 
 
 
@@ -339,6 +377,7 @@ body.resizing * {
 /* ── Pane Body ──────────────────────────────────────────────── */
 .pane-body {
   flex: 1; overflow-y: auto;
+  contain: layout style;
   padding: 8px 28px 100px;
   scroll-behavior: smooth;
 }
@@ -362,6 +401,7 @@ body.resizing * {
 .rules-body {
   flex: 1;
   overflow-y: auto;
+  contain: layout style;
   padding: 8px 24px 32px;
 }
 
@@ -540,6 +580,7 @@ body.resizing * {
 .debug-text {
   font-size: 10px; color: #333; margin-top: 6px;
   word-break: break-all; max-height: 40px; overflow-y: auto;
+  contain: layout style;
 }
 
 /* ── Overlap Warning ────────────────────────────────────────── */
